@@ -82,22 +82,28 @@ export class ClientsService {
       // validamos la busqueda
       if (queryParams.search) {
         const searchRegex = new RegExp(queryParams.search as string, 'i');
+        const orConditions: any[] = [
+          { name: searchRegex },
+          { last_name: searchRegex },
+          { email: searchRegex },
+        ];
+
+        if (!isNaN(Number(queryParams.search))) {
+          orConditions.push({ dni: Number(queryParams.search) });
+        }
+
         query = {
-          $or: [
-            { name: searchRegex },
-            { last_name: searchRegex },
-            { email: searchRegex },
-            { dni: searchRegex },
-          ],
+          parent_id: queryParams.parent_id,
+          $or: orConditions,
         };
       }
 
       // validamos la data de la paginacion
-      const page = queryParams.page || 1;
-      const perPage = queryParams.perPage || 7;
-      const skip = (parseInt(page as string) - 1) * parseInt(perPage as string);
+      const page = Number(queryParams.page) || 1;
+      const perPage = Number(queryParams.perPage) || 7;
+      const skip = (page - 1) * perPage;
 
-      clients = await this.repository.paginate(query, skip, perPage as number);
+      clients = await this.repository.paginate(query, skip, perPage);
 
       // Guardamos el resultado en cache por 10 minutos
       await this.cacheService.setItem(cacheKey, clients);
