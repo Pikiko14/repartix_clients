@@ -83,6 +83,7 @@ export class ClientsRepository implements IClientsRepository {
       'address',
       'phone',
       'email',
+      'coords',
     ],
   ): Promise<PaginationResponseInterface> {
     try {
